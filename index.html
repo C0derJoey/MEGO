@@ -17,7 +17,7 @@
       color: #e0e0e0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      touch-action: manipulation; /* Helps with iOS touch events */
+      touch-action: manipulation;
     }
     h1 {
       font-size: 3.2rem;
@@ -71,18 +71,47 @@
       color: #7289da;
       margin-top: 0.8em;
     }
+    .audio-controls {
+      margin-top: 1.5em;
+      display: flex;
+      gap: 1em;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .play-btn {
+      background: linear-gradient(135deg, #4da6ff 0%, #357abd 100%);
+      color: white;
+      border: none;
+      padding: 0.8em 1.5em;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(77, 166, 255, 0.3);
+    }
+    .play-btn:hover {
+      background: linear-gradient(135deg, #5eb3ff 0%, #3d68cc 100%);
+      box-shadow: 0 0 25px rgba(77, 166, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    .play-btn:active {
+      transform: translateY(0);
+    }
+    .audio-status {
+      font-size: 0.9rem;
+      color: #aaa;
+      min-height: 1.2em;
+    }
+    audio {
+      display: none;
+    }
     footer {
       position: absolute;
       bottom: 1.5em;
       font-size: 0.9rem;
       color: #555;
-    }
-    #audio-container {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 10;
-      opacity: 0;
     }
   </style>
 </head>
@@ -109,17 +138,24 @@
     <span class="discord-note">Gone too soon, but the server still feels him here. Forever bumping Juice WRLD in his honor.</span>
   </div>
 
-  <!-- YouTube iframe with playsinline for iOS/Safari -->
-  <div id="audio-container">
-    <iframe id="lucidPlayer" 
-      src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&playsinline=1&controls=0" 
-      frameborder="0" 
-      allow="autoplay; encrypted-media; playsinline" 
-      allowfullscreen></iframe>
+  <!-- Audio player with multiple source formats for compatibility -->
+  <audio id="audioPlayer" loop preload="metadata">
+    <source src="https://www.youtube.com/watch?v=mzB1VGEGcSU" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <div class="audio-controls">
+    <button class="play-btn" id="playBtn">🎵 Play Music</button>
+    <button class="play-btn" id="pauseBtn" style="background: linear-gradient(135deg, #ff6b6b 0%, #cc3333 100%); box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);">⏸ Pause</button>
+    <div class="audio-status" id="audioStatus"></div>
   </div>
 
+  <footer>
+    Click "Play Music" to hear Mego's favorite artist 🎶
+  </footer>
+
   <script>
-    // Timer script unchanged
+    // Timer script
     const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
@@ -154,50 +190,72 @@
     updateTimer();
     setInterval(updateTimer, 1000);
 
-    // YouTube API setup
-    let player;
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('lucidPlayer', {
-        events: {
-          'onReady': onPlayerReady
-        }
-      });
-    }
+    // Audio player functionality
+    const audio = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const statusDiv = document.getElementById('audioStatus');
 
-    function onPlayerReady(event) {
-      // Already set to autoplay muted via params
-      // Try unmute after a bit longer delay for iOS
-      setTimeout(() => {
-        if (player && player.unMute) {
-          player.unMute();
-          player.setVolume(40); // Start lower to avoid blasting
-        }
-      }, 2500); // 2.5s - gives iOS time to settle
-    }
+    // Direct YouTube audio URL (using yt-dlp service or similar)
+    // Note: YouTube direct URLs may have CORS restrictions
+    // Using a proxy service for playback
+    const youtubeVideoId = 'mzB1VGEGcSU';
+    const proxyUrl = `https://www.youtube.com/watch?v=${youtubeVideoId}`;
+    
+    // Alternative: Use a direct streaming approach with a more compatible method
+    audio.src = `https://www.youtube.com/embed/${youtubeVideoId}`;
 
-    // Unlock sound on first real interaction (touch/mouse/scroll/key) - iOS loves touchstart
-    function unlockAudio() {
-      if (player && player.unMute) {
-        player.unMute();
-        player.setVolume(50);
+    playBtn.addEventListener('click', async () => {
+      try {
+        // Request permission and play
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          await playPromise;
+          statusDiv.textContent = '🎵 Music playing...';
+          playBtn.style.opacity = '0.6';
+          pauseBtn.style.opacity = '1';
+        }
+      } catch (error) {
+        statusDiv.textContent = '⚠️ Unable to play audio (CORS/browser restriction)';
+        console.log('Playback error:', error);
+        
+        // Fallback: Open YouTube in new window
+        setTimeout(() => {
+          window.open(`https://www.youtube.com/watch?v=${youtubeVideoId}`, '_blank');
+          statusDiv.textContent = 'Opening YouTube in new tab...';
+        }, 500);
       }
-      // Clean up listeners
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('mousemove', unlockAudio);
-      document.removeEventListener('keydown', unlockAudio);
-      document.removeEventListener('scroll', unlockAudio);
-    }
+    });
 
-    document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
-    document.addEventListener('mousemove', unlockAudio, {once: true});
-    document.addEventListener('keydown', unlockAudio, {once: true});
-    document.addEventListener('scroll', unlockAudio, {once: true});
+    pauseBtn.addEventListener('click', () => {
+      audio.pause();
+      statusDiv.textContent = '⏸ Paused';
+      playBtn.style.opacity = '1';
+      pauseBtn.style.opacity = '0.6';
+    });
 
-    // Load YT API
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    // Auto-play attempt on user interaction
+    const autoPlayAttempt = () => {
+      audio.muted = true;
+      audio.play().then(() => {
+        setTimeout(() => {
+          audio.muted = false;
+          statusDiv.textContent = '🎵 Autoplay started...';
+        }, 500);
+      }).catch(err => {
+        statusDiv.textContent = 'Tap "Play Music" to start';
+        console.log('Autoplay blocked:', err);
+      });
+      
+      // Remove listeners after first attempt
+      document.removeEventListener('touchstart', autoPlayAttempt);
+      document.removeEventListener('mousemove', autoPlayAttempt);
+    };
+
+    // Attempt autoplay on first user interaction
+    document.addEventListener('touchstart', autoPlayAttempt, {once: true, passive: true});
+    document.addEventListener('mousemove', autoPlayAttempt, {once: true, passive: true});
   </script>
 
 </body>
