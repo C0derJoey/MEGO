@@ -1,18 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>In Memory of Juice WRLD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Memory of MEGO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .timer {
+            font-size: 2em;
+            margin: 20px 0;
+            color: #e74c3c;
+        }
+    </style>
 </head>
 <body>
-    <h1>In Memory of Juice WRLD</h1>
-    <audio id="audio" autoplay>
-        <source src="https://www.example.com/path/to/lucid_dreams.mp3" type="audio/mpeg">
+    <h1>In Memory of MEGO</h1>
+    <p class="timer" id="timer"></p>
+    <audio autoplay loop>
+        <source src="https://example.com/audio/your-audio.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+
     <script>
-        document.addEventListener('click', function() {
-            document.getElementById('audio').play();
-        });
+        // Countdown Timer - Set the date we're counting down to
+        var countDownDate = new Date("2026-12-31 00:00:00").getTime();
+
+        // Update the count down every 1 second
+        var x = setInterval(function() {
+            var now = new Date().getTime();
+            var distance = countDownDate - now;
+
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display the result in the element with id="timer"
+            document.getElementById("timer").innerHTML = days + "d " + hours + "h "
+            + minutes + "m " + seconds + "s ";
+
+            // If the countdown is finished, write some text
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("timer").innerHTML = "EXPIRED";
+            }
+        }, 1000);
     </script>
 </body>
 </html>
