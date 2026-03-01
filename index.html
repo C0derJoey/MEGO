@@ -17,7 +17,7 @@
       color: #e0e0e0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      touch-action: manipulation; /* Helps with iOS touch events */
+      touch-action: manipulation;
     }
     h1 {
       font-size: 3.2rem;
@@ -30,12 +30,27 @@
       color: #888;
       margin: 0.6em 0 1.8em;
     }
+    .juice-section {
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.3s;
+      margin: 1.5em 0 0.5em;
+    }
+    .juice-section:hover {
+      transform: scale(1.03);
+      filter: brightness(1.1);
+    }
     .juice-portrait {
       max-width: 280px;
       border-radius: 12px;
-      margin: 1.5em 0 2em;
       box-shadow: 0 0 30px rgba(77, 166, 255, 0.2);
       border: 2px solid #333;
+    }
+    .respect-footer {
+      font-size: 1.1rem;
+      color: #7289da; /* Discord/Juice vibe */
+      margin: 0.6em 0 2em;
+      font-style: italic;
+      max-width: 90%;
     }
     .timer {
       font-size: 2.8rem;
@@ -91,7 +106,10 @@
   <h1>In Loving Memory of Mego</h1>
   <div class="dates">Dominik Saniak • 29 July 2009 – 28 February 2026</div>
 
-  <img src="https://images5.alphacoders.com/108/1080655.jpg" alt="Juice WRLD - Mego's favorite artist" class="juice-portrait">
+  <div class="juice-section" onclick="unlockAudio()">
+    <img src="https://images5.alphacoders.com/108/1080655.jpg" alt="Juice WRLD - Mego's favorite artist" class="juice-portrait">
+    <div class="respect-footer">Click Juice WRLD to pay respect to Mego</div>
+  </div>
 
   <div class="timer" id="timer">
     <span id="days">0</span>d
@@ -109,7 +127,7 @@
     <span class="discord-note">Gone too soon, but the server still feels him here. Forever bumping Juice WRLD in his honor.</span>
   </div>
 
-  <!-- YouTube iframe with playsinline for iOS/Safari -->
+  <!-- YouTube iframe -->
   <div id="audio-container">
     <iframe id="lucidPlayer" 
       src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&playsinline=1&controls=0" 
@@ -119,7 +137,7 @@
   </div>
 
   <script>
-    // Timer script unchanged
+    // Timer script
     const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
@@ -154,7 +172,7 @@
     updateTimer();
     setInterval(updateTimer, 1000);
 
-    // YouTube API setup
+    // YouTube player
     let player;
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('lucidPlayer', {
@@ -165,29 +183,24 @@
     }
 
     function onPlayerReady(event) {
-      // Already set to autoplay muted via params
-      // Try unmute after a bit longer delay for iOS
       setTimeout(() => {
         if (player && player.unMute) {
           player.unMute();
-          player.setVolume(40); // Start lower to avoid blasting
+          player.setVolume(40);
         }
-      }, 2500); // 2.5s - gives iOS time to settle
+      }, 2500);
     }
 
-    // Unlock sound on first real interaction (touch/mouse/scroll/key) - iOS loves touchstart
+    // Unlock function (now triggered by image click too)
     function unlockAudio() {
       if (player && player.unMute) {
         player.unMute();
         player.setVolume(50);
       }
-      // Clean up listeners
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('mousemove', unlockAudio);
-      document.removeEventListener('keydown', unlockAudio);
-      document.removeEventListener('scroll', unlockAudio);
+      // Clean up other listeners if you want, but keep for extra gestures
     }
 
+    // Fallback listeners on body
     document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
     document.addEventListener('mousemove', unlockAudio, {once: true});
     document.addEventListener('keydown', unlockAudio, {once: true});
