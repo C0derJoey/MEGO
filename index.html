@@ -32,7 +32,7 @@
     .timer {
       font-size: 2.8rem;
       font-weight: bold;
-      color: #4da6ff; /* soft blue glow */
+      color: #4da6ff;
       background: rgba(20, 20, 40, 0.6);
       padding: 1.2em 1.8em;
       border-radius: 12px;
@@ -60,7 +60,7 @@
     }
     .discord-note {
       font-style: italic;
-      color: #7289da; /* discord-ish purple-blue */
+      color: #7289da;
       margin-top: 0.8em;
     }
     footer {
@@ -81,7 +81,7 @@
     <span id="hours">00</span>h
     <span id="minutes">00</span>m
     <span id="seconds">00</span>s
-    <div class="label">since we last heard his laugh</div>
+    <div class="label">since we last felt his vibe</div>
   </div>
 
   <div class="message">
@@ -95,15 +95,15 @@
   <footer>Made with respect • Never forgotten</footer>
 
   <script>
-    // Date he left us - careful with month (Feb = 1 in JS)
-    const lossDate = new Date('2026-02-28T23:59:59'); // end of day, adjust timezone if needed
+    // Precise time: 28 Feb 2026, 05:37 GMT/UTC
+    const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
       const now = new Date();
       let diff = now - lossDate;
 
       if (diff < 0) {
-        // If date is in future (before 28 Feb 2026), show zeros or message
+        // Future date → show zeros
         document.getElementById('days').textContent = '0';
         document.getElementById('hours').textContent = '00';
         document.getElementById('minutes').textContent = '00';
@@ -128,7 +128,6 @@
       document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
     }
 
-    // Start it up
     updateTimer();
     setInterval(updateTimer, 1000);
   </script>
