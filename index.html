@@ -29,6 +29,13 @@
       color: #888;
       margin: 0.6em 0 1.8em;
     }
+    .juice-portrait {
+      max-width: 280px;
+      border-radius: 12px;
+      margin: 1.5em 0 2em;
+      box-shadow: 0 0 30px rgba(77, 166, 255, 0.2);
+      border: 2px solid #333;
+    }
     .timer {
       font-size: 2.8rem;
       font-weight: bold;
@@ -69,12 +76,21 @@
       font-size: 0.9rem;
       color: #555;
     }
+    #audio-container {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      z-index: 10;
+      opacity: 0; /* hidden but active */
+    }
   </style>
 </head>
 <body>
 
   <h1>In Loving Memory of Mego</h1>
   <div class="dates">Dominik Saniak • 29 July 2009 – 28 February 2026</div>
+
+  <img src="https://images5.alphacoders.com/108/1080655.jpg" alt="Juice WRLD - Mego's favorite artist" class="juice-portrait">
 
   <div class="timer" id="timer">
     <span id="days">0</span>d
@@ -89,13 +105,20 @@
     Never spoke with voice, never showed his face,<br>
     but somehow always lit up the chat.<br>
     Pure joy, endless memes, good vibes only.<br>
-    <span class="discord-note">Gone too soon, but the server still feels him here.</span>
+    <span class="discord-note">Gone too soon, but the server still feels him here. Forever bumping Juice WRLD in his honor.</span>
   </div>
 
   <footer>Made with respect • Never forgotten</footer>
 
+  <!-- YouTube player - muted autoplay -->
+  <div id="audio-container">
+    <iframe id="lucidPlayer" width="0" height="0" 
+      src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&controls=0" 
+      frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
   <script>
-    // Precise time: 28 Feb 2026, 05:37 GMT/UTC
+    // Timer (unchanged)
     const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
@@ -103,7 +126,6 @@
       let diff = now - lossDate;
 
       if (diff < 0) {
-        // Future date → show zeros
         document.getElementById('days').textContent = '0';
         document.getElementById('hours').textContent = '00';
         document.getElementById('minutes').textContent = '00';
@@ -130,6 +152,48 @@
 
     updateTimer();
     setInterval(updateTimer, 1000);
+
+    // YouTube API for control
+    let player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('lucidPlayer', {
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Already autoplaying muted via URL params
+      // Try unmute after short delay (sometimes counts as gesture if page loaded)
+      setTimeout(() => {
+        if (player) player.unMute();
+      }, 1500); // 1.5 sec delay - adjust if needed
+    }
+
+    // Fallback: unmute on first user interaction (mousemove, keydown, scroll, touch)
+    function unlockAudio() {
+      if (player) {
+        player.unMute();
+        player.setVolume(50); // reasonable level
+      }
+      // Remove listeners after first unlock
+      document.removeEventListener('mousemove', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+      document.removeEventListener('scroll', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+    }
+
+    document.addEventListener('mousemove', unlockAudio, {once: true});
+    document.addEventListener('keydown', unlockAudio, {once: true});
+    document.addEventListener('scroll', unlockAudio, {once: true});
+    document.addEventListener('touchstart', unlockAudio, {once: true});
+
+    // Load YouTube API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   </script>
 
 </body>
