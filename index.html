@@ -17,6 +17,7 @@
       color: #e0e0e0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
+      touch-action: manipulation; /* Helps with iOS touch events */
     }
     h1 {
       font-size: 3.2rem;
@@ -81,7 +82,7 @@
       bottom: 10px;
       right: 10px;
       z-index: 10;
-      opacity: 0; /* hidden but active */
+      opacity: 0;
     }
   </style>
 </head>
@@ -110,15 +111,17 @@
 
   <footer>Made with respect • Never forgotten</footer>
 
-  <!-- YouTube player - muted autoplay -->
+  <!-- YouTube iframe with playsinline for iOS/Safari -->
   <div id="audio-container">
-    <iframe id="lucidPlayer" width="0" height="0" 
-      src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&controls=0" 
-      frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <iframe id="lucidPlayer" 
+      src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&playsinline=1&controls=0" 
+      frameborder="0" 
+      allow="autoplay; encrypted-media; playsinline" 
+      allowfullscreen></iframe>
   </div>
 
   <script>
-    // Timer (unchanged)
+    // Timer script unchanged
     const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
@@ -153,7 +156,7 @@
     updateTimer();
     setInterval(updateTimer, 1000);
 
-    // YouTube API for control
+    // YouTube API setup
     let player;
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('lucidPlayer', {
@@ -164,32 +167,35 @@
     }
 
     function onPlayerReady(event) {
-      // Already autoplaying muted via URL params
-      // Try unmute after short delay (sometimes counts as gesture if page loaded)
+      // Already set to autoplay muted via params
+      // Try unmute after a bit longer delay for iOS
       setTimeout(() => {
-        if (player) player.unMute();
-      }, 1500); // 1.5 sec delay - adjust if needed
+        if (player && player.unMute) {
+          player.unMute();
+          player.setVolume(40); // Start lower to avoid blasting
+        }
+      }, 2500); // 2.5s - gives iOS time to settle
     }
 
-    // Fallback: unmute on first user interaction (mousemove, keydown, scroll, touch)
+    // Unlock sound on first real interaction (touch/mouse/scroll/key) - iOS loves touchstart
     function unlockAudio() {
-      if (player) {
+      if (player && player.unMute) {
         player.unMute();
-        player.setVolume(50); // reasonable level
+        player.setVolume(50);
       }
-      // Remove listeners after first unlock
+      // Clean up listeners
+      document.removeEventListener('touchstart', unlockAudio);
       document.removeEventListener('mousemove', unlockAudio);
       document.removeEventListener('keydown', unlockAudio);
       document.removeEventListener('scroll', unlockAudio);
-      document.removeEventListener('touchstart', unlockAudio);
     }
 
+    document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
     document.addEventListener('mousemove', unlockAudio, {once: true});
     document.addEventListener('keydown', unlockAudio, {once: true});
     document.addEventListener('scroll', unlockAudio, {once: true});
-    document.addEventListener('touchstart', unlockAudio, {once: true});
 
-    // Load YouTube API
+    // Load YT API
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
