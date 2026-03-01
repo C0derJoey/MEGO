@@ -17,8 +17,7 @@
       color: #e0e0e0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      touch-action: manipulation;
-      cursor: pointer;
+      touch-action: manipulation; /* Helps with iOS touch events */
     }
     h1 {
       font-size: 3.2rem;
@@ -78,20 +77,12 @@
       font-size: 0.9rem;
       color: #555;
     }
-    audio {
-      display: none;
-    }
-    .music-indicator {
+    #audio-container {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 1.2rem;
+      bottom: 10px;
+      right: 10px;
+      z-index: 10;
       opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
-    }
-    .music-indicator.active {
-      opacity: 1;
     }
   </style>
 </head>
@@ -118,17 +109,19 @@
     <span class="discord-note">Gone too soon, but the server still feels him here. Forever bumping Juice WRLD in his honor.</span>
   </div>
 
-  <!-- Hidden audio element -->
-  <audio id="audioPlayer" loop preload="metadata" crossorigin="anonymous">
-    <!-- YouTube to MP3 conversion services or direct audio file -->
-    <!-- You may need to replace this with a hosted MP3 of Juice WRLD - Lucid Dreams -->
-    <source src="https://www.youtube.com/watch?v=mzB1VGEGcSU" type="audio/mpeg">
-  </audio>
+  <footer>Made with respect • Never forgotten</footer>
 
-  <div class="music-indicator" id="musicIndicator">🎵 Now Playing</div>
+  <!-- YouTube iframe with playsinline for iOS/Safari -->
+  <div id="audio-container">
+    <iframe id="lucidPlayer" 
+      src="https://www.youtube.com/embed/mzB1VGEGcSU?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=mzB1VGEGcSU&playsinline=1&controls=0" 
+      frameborder="0" 
+      allow="autoplay; encrypted-media; playsinline" 
+      allowfullscreen></iframe>
+  </div>
 
   <script>
-    // Timer script
+    // Timer script unchanged
     const lossDate = new Date('2026-02-28T05:37:00Z');
 
     function updateTimer() {
@@ -163,60 +156,50 @@
     updateTimer();
     setInterval(updateTimer, 1000);
 
-    // Autoplay on user interaction
-    const audio = document.getElementById('audioPlayer');
-    const musicIndicator = document.getElementById('musicIndicator');
-    let audioStarted = false;
-
-    function startAudio() {
-      if (audioStarted) return;
-      
-      audioStarted = true;
-
-      // Try with muted first (iOS allows muted autoplay)
-      audio.muted = true;
-      const playPromise = audio.play();
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Unmute after a short delay
-            setTimeout(() => {
-              audio.muted = false;
-              audio.volume = 0.6;
-              musicIndicator.classList.add('active');
-            }, 500);
-          })
-          .catch(err => {
-            console.log('Audio playback failed:', err);
-            // Fallback: Open YouTube in new tab
-            window.open('https://www.youtube.com/watch?v=mzB1VGEGcSU', '_blank');
-            musicIndicator.textContent = '🎵 Opening YouTube...';
-            musicIndicator.classList.add('active');
-          });
-      }
-
-      // Remove event listeners once audio starts
-      document.removeEventListener('click', startAudio);
-      document.removeEventListener('touchstart', startAudio);
-      document.removeEventListener('mousemove', startAudio);
-      document.removeEventListener('scroll', startAudio);
-      document.removeEventListener('keydown', startAudio);
+    // YouTube API setup
+    let player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('lucidPlayer', {
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
     }
 
-    // Multiple interaction triggers for maximum compatibility
-    document.addEventListener('click', startAudio, {once: true, passive: true});
-    document.addEventListener('touchstart', startAudio, {once: true, passive: true});
-    document.addEventListener('mousemove', startAudio, {once: true, passive: true});
-    document.addEventListener('scroll', startAudio, {once: true, passive: true});
-    document.addEventListener('keydown', startAudio, {once: true, passive: true});
+    function onPlayerReady(event) {
+      // Already set to autoplay muted via params
+      // Try unmute after a bit longer delay for iOS
+      setTimeout(() => {
+        if (player && player.unMute) {
+          player.unMute();
+          player.setVolume(40); // Start lower to avoid blasting
+        }
+      }, 2500); // 2.5s - gives iOS time to settle
+    }
 
-    // Fallback: Auto-attempt on page load after a delay
-    setTimeout(() => {
-      if (!audioStarted) {
-        startAudio();
+    // Unlock sound on first real interaction (touch/mouse/scroll/key) - iOS loves touchstart
+    function unlockAudio() {
+      if (player && player.unMute) {
+        player.unMute();
+        player.setVolume(50);
       }
-    }, 3000);
+      // Clean up listeners
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('mousemove', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+      document.removeEventListener('scroll', unlockAudio);
+    }
+
+    document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
+    document.addEventListener('mousemove', unlockAudio, {once: true});
+    document.addEventListener('keydown', unlockAudio, {once: true});
+    document.addEventListener('scroll', unlockAudio, {once: true});
+
+    // Load YT API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   </script>
 
 </body>
