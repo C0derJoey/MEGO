@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>In Memory of Mego • Dominik Saniak</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3.2rem;
+      margin: 0.4em 0;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+    .dates {
+      font-size: 1.4rem;
+      color: #888;
+      margin: 0.6em 0 1.8em;
+    }
+    .timer {
+      font-size: 2.8rem;
+      font-weight: bold;
+      color: #4da6ff; /* soft blue glow */
+      background: rgba(20, 20, 40, 0.6);
+      padding: 1.2em 1.8em;
+      border-radius: 12px;
+      border: 1px solid #333;
+      box-shadow: 0 0 25px rgba(77, 166, 255, 0.15);
+      min-width: 320px;
+    }
+    .timer span {
+      display: inline-block;
+      min-width: 80px;
+    }
+    .label {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 0.4em;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .message {
+      max-width: 620px;
+      font-size: 1.3rem;
+      line-height: 1.6;
+      margin: 2.5em 1em 1em;
+      color: #ccc;
+    }
+    .discord-note {
+      font-style: italic;
+      color: #7289da; /* discord-ish purple-blue */
+      margin-top: 0.8em;
+    }
+    footer {
+      position: absolute;
+      bottom: 1.5em;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>In Loving Memory of Mego</h1>
+  <div class="dates">Dominik Saniak • 29 July 2009 – 28 February 2026</div>
+
+  <div class="timer" id="timer">
+    <span id="days">0</span>d
+    <span id="hours">00</span>h
+    <span id="minutes">00</span>m
+    <span id="seconds">00</span>s
+    <div class="label">since we last heard his laugh</div>
+  </div>
+
+  <div class="message">
+    Mego was the quiet heartbeat of so many Discord nights.<br>
+    Never spoke with voice, never showed his face,<br>
+    but somehow always lit up the chat.<br>
+    Pure joy, endless memes, good vibes only.<br>
+    <span class="discord-note">Gone too soon, but the server still feels him here.</span>
+  </div>
+
+  <footer>Made with respect • Never forgotten</footer>
+
+  <script>
+    // Date he left us - careful with month (Feb = 1 in JS)
+    const lossDate = new Date('2026-02-28T23:59:59'); // end of day, adjust timezone if needed
+
+    function updateTimer() {
+      const now = new Date();
+      let diff = now - lossDate;
+
+      if (diff < 0) {
+        // If date is in future (before 28 Feb 2026), show zeros or message
+        document.getElementById('days').textContent = '0';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('minutes').textContent = '00';
+        document.getElementById('seconds').textContent = '00';
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+
+      const minutes = Math.floor(diff / (1000 * 60));
+      diff -= minutes * (1000 * 60);
+
+      const seconds = Math.floor(diff / 1000);
+
+      document.getElementById('days').textContent = days;
+      document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+      document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+      document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    }
+
+    // Start it up
+    updateTimer();
+    setInterval(updateTimer, 1000);
+  </script>
+
+</body>
+</html>
